@@ -19,13 +19,17 @@ module.exports = function (app) {
 			
 			var answer ={"unix":null, "natural":null};
 			var m;
-			var strdate=/(\w+)\s(\d{1,2}),\s(\d{2,4})/i.exec(data);
+			var strdate=/(\w+)\s(\d{1,2}),?(\s?\d{2,4})?/i.exec(data);
 
 
 			if(/^[\-0-9]+$/.test(data) ){  //unix format
 				m=moment(data, 'X');
 			} else if(strdate){ // natural format
-				m=moment(strdate[1]+" "+strdate[2]+","+strdate[3]);
+				var month = strdate[1];
+				var day = strdate[2];
+				var year = strdate[3] || "";
+				m=moment(Date.parse(month+" "+day+" "+year));
+				//console.log(strdate);
 			}
 			
 			if(m && m.isValid()) {

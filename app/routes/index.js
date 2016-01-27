@@ -1,57 +1,39 @@
 'use strict';
+var moment = require('moment');
 
 var path = process.cwd();
-var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
 
 module.exports = function (app, passport) {
 
-	function isLoggedIn (req, res, next) {
-		if (req.isAuthenticated()) {
-			return next();
-		} else {
-			res.redirect('/login');
-		}
-	}
-
-	var clickHandler = new ClickHandler();
 
 	app.route('/')
-		.get(isLoggedIn, function (req, res) {
+		.get(function (req, res) {
 			res.sendFile(path + '/public/index.html');
 		});
 
-	app.route('/login')
+	app.route('/:data')
 		.get(function (req, res) {
-			res.sendFile(path + '/public/login.html');
+			//{"unix":1450137600,"natural":"December 15, 2015"
+			var data = req.params.data;
+			console.log(req.params.data);
+			
+			var answer ={"unix":null, "natural":null};
+			var m;
+			var strdate=/(\w+)\s(\d{1,2}),\s(\d{2,4})/i.exec(data);
+
+
+			if(/^[\-0-9]+$/.test(data) ){  //unix format
+				m=moment(data, 'X');
+			} else if(strdate){ // natural format
+				m=moment(strdate[1]+" "+strdate[2]+","+strdate[3]);
+			}
+			
+			if(m && m.isValid()) {
+				var unix= m.unix();
+				var natural=m.format("MMMM DD, YYYY");
+				answer = {"unix":unix, "natural": natural};
+			}
+			res.json(answer);
 		});
 
-	app.route('/logout')
-		.get(function (req, res) {
-			req.logout();
-			res.redirect('/login');
-		});
-
-	app.route('/profile')
-		.get(isLoggedIn, function (req, res) {
-			res.sendFile(path + '/public/profile.html');
-		});
-
-	app.route('/api/:id')
-		.get(isLoggedIn, function (req, res) {
-			res.json(req.user.github);
-		});
-
-	app.route('/auth/github')
-		.get(passport.authenticate('github'));
-
-	app.route('/auth/github/callback')
-		.get(passport.authenticate('github', {
-			successRedirect: '/',
-			failureRedirect: '/login'
-		}));
-
-	app.route('/api/:id/clicks')
-		.get(isLoggedIn, clickHandler.getClicks)
-		.post(isLoggedIn, clickHandler.addClick)
-		.delete(isLoggedIn, clickHandler.resetClicks);
 };

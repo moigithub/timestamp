@@ -3,7 +3,7 @@ var moment = require('moment');
 
 var path = process.cwd();
 
-module.exports = function (app, passport) {
+module.exports = function (app) {
 
 
 	app.route('/')
@@ -15,7 +15,7 @@ module.exports = function (app, passport) {
 		.get(function (req, res) {
 			//{"unix":1450137600,"natural":"December 15, 2015"
 			var data = req.params.data;
-			console.log(req.params.data);
+			//console.log(req.params.data);
 			
 			var answer ={"unix":null, "natural":null};
 			var m;
